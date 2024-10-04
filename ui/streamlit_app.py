@@ -2,22 +2,43 @@
 
 import streamlit as st
 import asyncio
+import json
 from langchain_core.messages import AIMessage, HumanMessage
 
-# Importar componentes personalizados
+# Import custom components
 from ui.components.ui_components import render_header, render_features
 from ui.components.user_input import handle_user_input
 from ui.components.dialogs import save_dialog
 
-def run_app():
-    st.set_page_config(page_title="Asistente con Integración de Herramientas", page_icon="✨", layout="wide")
+st.set_page_config(page_title="OptiSales", page_icon="✨", layout="wide")
 
-    # Renderizar encabezado y características
-    render_header()
-    render_features()
+def load_translations(language):
+    with open("translations.json", 'r', encoding='utf-8') as f:
+        translations = json.load(f)
+    return translations[language]
+
+def run_app():
+    # Initialize session state for language
+    if 'language' not in st.session_state:
+        st.session_state.language = 'en'
+
+    # Language selector
+    language = st.sidebar.selectbox('Language / Idioma', options=['Español', 'English'])
+
+    if language == 'English':
+        st.session_state.language = 'en'
+    else:
+        st.session_state.language = 'es'
+
+    # Load translations
+    translations = load_translations(st.session_state.language)
+    
+    render_header(translations)
+    render_features(translations)
     st.write(" ")
     st.divider()
-    # Inicializar variables de estado de sesión
+
+    # Initialize session state variables
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
     if 'thread' not in st.session_state:
@@ -25,12 +46,12 @@ def run_app():
     if 'data_to_save' not in st.session_state:
         st.session_state.data_to_save = None
 
-    # Layout principal
+    # Main layout
     body_col1, body_col2 = st.columns([1, 1])
     with body_col1:
-        # Mostrar historial de conversación
-        st.header("Historial de conversación", divider="blue")
-        container = st.container(height=400)
+        # Display conversation history
+        st.header(translations['header'], divider="blue")
+        container = st.container(height=500)
         with container:
             for message in st.session_state.conversation_history:
                 if isinstance(message, HumanMessage):
@@ -40,21 +61,22 @@ def run_app():
                     with st.chat_message("assistant", avatar="✨"):
                         st.write(message.content)
 
-        # Manejo de entrada del usuario
-        st.header("Conversación actual", divider="blue")
-        user_input = st.chat_input("Escribe tu mensaje")
+        # Handle user input
+        st.header(translations['conversation_current'], divider="blue")
+        user_input = st.chat_input(translations['write_message'])
         if user_input:
             asyncio.run(handle_user_input(user_input))
 
-        # Diálogo para guardar datos
+        # Save data dialog
         if st.session_state.get('show_save_prompt', False) and st.session_state.data_to_save:
-            save_dialog()
+            save_dialog(translations)
 
-    # Información de depuración
+    # Debug information
     with body_col2:
-        if st.toggle("Mostrar agentes' 🧠"):
-            st.write("Información de depuración:")
-            st.write(f"data_to_save: {st.session_state.data_to_save}")
-            st.write(f"conversation_history: {st.session_state.conversation_history}")
+        if st.checkbox(translations['show_agents']):
+            st.write(translations['debug_info'])
+            st.write(f"{translations['data_to_save']}: {st.session_state.data_to_save}")
+            st.write(f"{translations['conversation_history']}: {st.session_state.conversation_history}")
 
-
+if __name__ == "__main__":
+    run_app()
