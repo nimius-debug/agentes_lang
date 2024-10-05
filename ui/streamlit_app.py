@@ -10,7 +10,6 @@ from ui.components.ui_components import render_header, render_features
 from ui.components.user_input import handle_user_input
 from ui.components.dialogs import save_dialog
 
-st.set_page_config(page_title="OptiSales", page_icon="✨", layout="wide")
 
 def load_translations(language):
     with open("translations.json", 'r', encoding='utf-8') as f:
@@ -18,6 +17,8 @@ def load_translations(language):
     return translations[language]
 
 def run_app():
+    
+    st.set_page_config(page_title="OptiSales", page_icon="✨", layout="wide")
     # Initialize session state for language
     if 'language' not in st.session_state:
         st.session_state.language = 'en'
@@ -78,5 +79,4 @@ def run_app():
             st.write(f"{translations['data_to_save']}: {st.session_state.data_to_save}")
             st.write(f"{translations['conversation_history']}: {st.session_state.conversation_history}")
 
-if __name__ == "__main__":
-    run_app()
+
